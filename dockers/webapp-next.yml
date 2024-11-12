@@ -1,0 +1,28 @@
+name: panora
+# version: '3.8'
+
+services:
+  webapp-next:
+    build:
+      dockerfile: ./apps/webapp/Dockerfile
+      context: ../
+      args:
+        NEXT_PUBLIC_POSTHOG_KEY: ${POSTHOG_KEY} 
+        NEXT_PUBLIC_POSTHOG_HOST: ${POSTHOG_HOST}
+        NEXT_PUBLIC_DISTRIBUTION: ${DISTRIBUTION}
+        NEXT_PUBLIC_BACKEND_DOMAIN: ${NEXT_PUBLIC_BACKEND_DOMAIN}
+        NEXT_PUBLIC_MAGIC_LINK_DOMAIN: ${NEXT_PUBLIC_MAGIC_LINK_DOMAIN}
+        NEXT_PUBLIC_WEBAPP_DOMAIN: ${NEXT_PUBLIC_WEBAPP_DOMAIN}
+        NEXT_PUBLIC_REDIRECT_WEBHOOK_INGRESS: ${REDIRECT_TUNNEL_INGRESS}
+    restart: unless-stopped
+    ports:
+      - 80:8090
+    networks:
+      - backend
+      - frontend
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge

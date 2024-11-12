@@ -1,0 +1,28 @@
+name: panora
+# version: '3.8'
+
+services:
+  redis:
+    image: valkey/valkey:7.2-alpine
+    container_name: 'Redis'
+    command: valkey-server --requirepass ${REDIS_PASS}
+    ports:
+      - '${REDIS_PORT}:${REDIS_PORT}'
+    volumes:
+      - ../redis-data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge
