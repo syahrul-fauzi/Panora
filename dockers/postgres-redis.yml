@@ -1,0 +1,50 @@
+name: panora
+# version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16.1
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ../pg_data:/var/lib/postgresql/data
+      - ../packages/api/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../packages/api/scripts/automatic_timestamps.sql:/docker-entrypoint-initdb.d/automatic_timestamps.sql
+      - ../packages/api/scripts/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    networks:
+      - backend
+
+  redis:
+    image: valkey/valkey:7.2-alpine
+    container_name: 'Redis'
+    command: valkey-server --requirepass ${REDIS_PASS}
+    ports:
+      - '${REDIS_PORT}:${REDIS_PORT}'
+    volumes:
+      - ../redis-data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+networks:
+  backend:
+    driver: bridge
